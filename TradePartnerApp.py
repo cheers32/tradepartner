@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request
 
 from DataProvider.MovingAverageProvider import getSimpleMovingAverage, getStdv
 from DataProvider.ReturnDataProvider import getDateText, getPctReturn
+from DataProvider.RsiProvider import getRsi
 
 app = Flask(__name__)
 
@@ -16,13 +17,13 @@ def indexGet():
     date = request.form['date'] if 'date' in request.form else ""
     closeList = close.split(',')
     dateList = date.split(',')
-    # add a request list, then according to request, call corresponding data provider
 
     calcRes = [
         getDateText(dateList),
         getPctReturn(closeList),
         getSimpleMovingAverage(closeList, 20), getSimpleMovingAverage(closeList, 50), getSimpleMovingAverage(closeList, 125), getSimpleMovingAverage(closeList, 200),
-        getStdv(closeList, 20)
+        getStdv(closeList, 20),
+        getRsi(closeList, 2), getRsi(closeList, 4)
     ]
 
     res = '|'.join(calcRes)

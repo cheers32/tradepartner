@@ -1,0 +1,195 @@
+using System;
+using System.Drawing;
+using System.Linq;
+using WealthLab;
+using WealthLab.Indicators;
+using System.Net;
+using System.IO;
+using System.Text;
+using System.Collections.Specialized;
+using System.Collections;
+using System.Collections.Generic;
+
+namespace WealthLab.Strategies
+{
+	public class RsiReporter
+	{
+		AutoAnlysisSystem ws;
+		ChartPane rsi2Pane;
+
+		public RsiReporter(AutoAnlysisSystem obj)
+		{
+			this.ws = obj;
+			rsi2Pane = ws.CreatePane(8, true, true);
+		}
+
+		public void handle(Dictionary<string, string> calcResult)
+		{
+			String[] rsi2 = calcResult["rsi2"].Split(',');
+			String[] rsi4 = calcResult["rsi4"].Split(',');
+			DataSeries rsi2Ds = new DataSeries("rsi2");
+			DataSeries rsi4Ds = new DataSeries("rsi4");
+			rsi2Ds.Add(0);
+			rsi4Ds.Add(0);
+			for (int i = 1; i < rsi2.Length; i++)
+			{
+				double valRsi2 = double.Parse(rsi2[i]);
+				double valRsi4 = double.Parse(rsi4[i]);
+				rsi2Ds.Add(valRsi2);
+				rsi4Ds.Add(valRsi4);
+				if (valRsi2 < 10)
+					ws.AnnotateChart(rsi2Pane, Math.Round(valRsi2, 2).ToString(), i, valRsi2+10, Color.Black, Color.Transparent);
+				else if(valRsi2 > 90 || i == rsi2.Length-1)
+					ws.AnnotateChart(rsi2Pane, Math.Round(valRsi2, 2).ToString(), i, valRsi2, Color.Black, Color.Transparent);
+				if (valRsi4 < 10 || valRsi4 > 90 || i == rsi4.Length - 1)
+					ws.AnnotateChart(rsi2Pane, Math.Round(valRsi4, 2).ToString(), i, valRsi4, Color.Salmon, Color.Transparent);
+			}
+			ws.DrawHorzLine(rsi2Pane, 90, Color.Blue, LineStyle.Solid, 1);
+			ws.DrawHorzLine(rsi2Pane, 10, Color.Blue, LineStyle.Solid, 1);
+			ws.DrawHorzLine(rsi2Pane, 70, Color.LightBlue, LineStyle.Solid, 2);
+			ws.DrawHorzLine(rsi2Pane, 30, Color.LightBlue, LineStyle.Solid, 2);
+			ws.PlotSeries(rsi2Pane, rsi2Ds, Color.Violet, WealthLab.LineStyle.Solid, 2);
+			ws.PlotSeries(rsi2Pane, rsi4Ds, Color.Salmon, WealthLab.LineStyle.Solid, 1);
+		}
+	}
+
+	public class movingAverageReporter
+	{
+		AutoAnlysisSystem ws;
+
+		public movingAverageReporter(AutoAnlysisSystem obj)
+		{
+			this.ws = obj;
+		}
+
+		public void handle(Dictionary<string, string> calcResult)
+		{
+			String[] sma20 = calcResult["sma20"].Split(',');
+			String[] sma50 = calcResult["sma50"].Split(',');
+			String[] sma125 = calcResult["sma125"].Split(',');
+			String[] sma200 = calcResult["sma200"].Split(',');
+			String[] stdv20 = calcResult["stdv20"].Split(',');
+			DataSeries sma20Ds = new DataSeries(ws.Close, "sma20");
+			DataSeries sma50Ds = new DataSeries(ws.Close, "sma50");
+			DataSeries sma125Ds = new DataSeries(ws.Close, "sma125");
+			DataSeries sma200Ds = new DataSeries(ws.Close, "sma200");
+			DataSeries stdv20Ds = new DataSeries(ws.Close, "stdv20");
+			int size = sma50.Length;
+
+			for (int i = 0; i < size; i++)
+			{
+				double valSma20 = Double.Parse(sma20[i]);
+				double valSma50 = Double.Parse(sma50[i]);
+				double valSma125 = Double.Parse(sma125[i]);
+				double valSma200 = Double.Parse(sma200[i]);
+				double valStdv20 = Double.Parse(stdv20[i]);
+				sma20Ds[i] = valSma20;
+				sma50Ds[i] = valSma50;
+				sma125Ds[i] = valSma125;
+				sma200Ds[i] = valSma200;
+				stdv20Ds[i] = valStdv20;
+
+				if (i % 5 == 0 || i == size - 1)
+				{
+					double cv20 = Math.Round(valStdv20 * 100 / valSma20, 2);  // Coefficient of Variation (CV)
+					String stdv20Text = Math.Round(valStdv20, 2).ToString() + " (" + cv20.ToString() + "%)";
+					ws.AnnotateChart(ws.PricePane, stdv20Text, i, valSma20, Color.Blue, Color.Transparent);
+
+					ws.AnnotateChart(ws.PricePane, valSma50.ToString(), i, valSma50, Color.Orange, Color.Transparent);
+					ws.AnnotateChart(ws.PricePane, valSma125.ToString(), i, valSma125, Color.Green, Color.Transparent);
+					ws.AnnotateChart(ws.PricePane, valSma200.ToString(), i, valSma200, Color.Magenta, Color.Transparent);
+				}
+			}
+			ws.PlotSeries(ws.PricePane, sma20Ds, Color.Cyan, WealthLab.LineStyle.Solid, 1);
+			ws.PlotSeries(ws.PricePane, sma50Ds, Color.Orange, WealthLab.LineStyle.Solid, 1);
+			ws.PlotSeries(ws.PricePane, sma125Ds, Color.Green, WealthLab.LineStyle.Solid, 1);
+			ws.PlotSeries(ws.PricePane, sma200Ds, Color.Magenta, WealthLab.LineStyle.Solid, 2);
+			ws.PlotSeries(ws.PricePane, sma20Ds+2*stdv20Ds, Color.Cyan, WealthLab.LineStyle.Solid, 2);
+			ws.PlotSeries(ws.PricePane, sma20Ds-2*stdv20Ds, Color.Cyan, WealthLab.LineStyle.Solid, 2);
+
+		}
+	}
+
+	public class ReturnReporter
+	{
+		AutoAnlysisSystem ws;
+
+		public ReturnReporter(AutoAnlysisSystem obj)
+		{
+			this.ws = obj;
+		}
+
+		public void handle(Dictionary<string, string> calcResult)
+		{
+			String[] dates = calcResult["dates"].Split(',');
+			String[] pctReturns = calcResult["pctReturns"].Split(',');
+
+			for (int i = 0; i < dates.Length; i++)
+			{
+				double value = Double.Parse(pctReturns[i]);
+				if (value > 0)
+				{
+					ws.AnnotateBar(value.ToString() + "%", i, true, Color.Green);
+					//ws.AnnotateBar(dates[i], i, false, Color.Green);
+				}
+				else
+				{
+					ws.AnnotateBar(value.ToString() + "%", i, true, Color.Red);
+					//ws.AnnotateBar(dates[i], i, false, Color.Red);
+				}
+			}
+		}
+	}
+
+	public class AutoAnlysisSystem : WealthScript {
+		String baseUrl = "http://localhost:5030/trade";
+		Dictionary<String, String> calcResult;
+
+		protected override void Execute() {
+			// gather raw data
+			StringBuilder openSb = new StringBuilder();
+			StringBuilder highSb = new StringBuilder();
+			StringBuilder lowSb = new StringBuilder();
+			StringBuilder closeSb = new StringBuilder();
+			StringBuilder dateSb = new StringBuilder();
+			int size = Close.Count;
+			for (int i = 0; i < size; i++)
+			{
+				openSb.Append(Close[i]).Append(",");
+				highSb.Append(High[i]).Append(",");
+				lowSb.Append(Low[i]).Append(",");
+				closeSb.Append(Close[i]).Append(",");
+				dateSb.Append(Date[i]).Append(",");
+			}
+			openSb.Remove(openSb.Length - 1, 1);
+			highSb.Remove(highSb.Length - 1, 1);
+			lowSb.Remove(lowSb.Length - 1, 1);
+			closeSb.Remove(closeSb.Length - 1, 1);
+			dateSb.Remove(dateSb.Length - 1, 1);
+
+			// send request for calculation
+			using (var client = new WebClient())
+			{
+				calcResult = new Dictionary<String, String>();
+				var data = new NameValueCollection();
+				data.Add("open", openSb.ToString());
+				data.Add("high", highSb.ToString());
+				data.Add("low", lowSb.ToString());
+				data.Add("close", closeSb.ToString());
+				data.Add("date", dateSb.ToString());
+				var response = client.UploadValues(baseUrl, data);
+				var outputString = Encoding.Default.GetString(response).Replace("\"", "");
+				foreach (string line in outputString.Split('|'))
+				{
+					string[] parts = line.Split('@');
+					calcResult.Add(parts[0], parts[1]);
+				}
+			}
+
+			// delegate to each reporter to handle specific result
+			new ReturnReporter(this).handle(calcResult);
+			new movingAverageReporter(this).handle(calcResult);
+			new RsiReporter(this).handle(calcResult);
+		}
+	}
+}
