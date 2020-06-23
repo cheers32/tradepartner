@@ -34,7 +34,7 @@ def indexGet():
         getStdv(closeList, 20),
         getRsi(closeList, 2), getRsi(closeList, 4),
         getLows(lowList, highLowPeriod), getHighs(highList, highLowPeriod), getSwingLines(lowList, highList, dateList, closeList[len(closeList)-1], highLowPeriod),
-        getLevels(openList, highList, lowList, closeList, 40)
+        getLevels(openList, highList, lowList, closeList, 20)
     ]
 
     res = '|'.join(calcRes)

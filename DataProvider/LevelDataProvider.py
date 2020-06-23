@@ -1,5 +1,10 @@
 from collections import deque
 
+def getKey(candidateKey, map, threshold):
+    for key in map:
+        if abs(candidateKey/key-1)*100<threshold:
+            return key
+    return candidateKey
 
 def getLevels(openList, highList, lowList, closeList, n):
     openQueue = deque()
@@ -10,6 +15,7 @@ def getLevels(openList, highList, lowList, closeList, n):
     size = len(openList)
     idx = 0
     resList = []
+    threshold = 0.2
     while idx < size:
         if len(openQueue) >= n:
             priceMap[openQueue.popleft()].popleft()
@@ -20,6 +26,11 @@ def getLevels(openList, highList, lowList, closeList, n):
         high = round(float(highList[idx]),1)
         low = round(float(lowList[idx]),1)
         close = round(float(closeList[idx]),1)
+        # find existing key from table, then push key and index
+        open = getKey(open, priceMap, threshold)
+        high = getKey(high, priceMap, threshold)
+        low = getKey(low, priceMap, threshold)
+        close = getKey(close, priceMap, threshold)
         openQueue.append(open)
         highQueue.append(high)
         lowQueue.append(low)
@@ -37,7 +48,7 @@ def getLevels(openList, highList, lowList, closeList, n):
         priceMap[low].append(idx)
         priceMap[close].append(idx)
         for key in priceMap:
-            if len(priceMap[key])>5:
+            if len(priceMap[key]) >= 7:
                 startIdx = priceMap[key][0]
                 endIdx = priceMap[key][len(priceMap[key])-1]
                 resList.append(str(startIdx)+";"+str(endIdx)+";"+str(key))
