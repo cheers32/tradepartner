@@ -60,11 +60,12 @@ namespace WealthLab.Strategies
 				ws.PrintDebug(s);
 				string[] parts = s.Split(';');
 
-				Color color = double.Parse(parts[1]) < double.Parse(parts[3]) ? Color.SkyBlue : Color.SkyBlue;
+				Color color = double.Parse(parts[1]) < double.Parse(parts[3]) ? Color.Aquamarine : Color.Aquamarine;
+				Color labelColor = double.Parse(parts[1]) < double.Parse(parts[3]) ? Color.Blue : Color.Blue;
 				bool lable = double.Parse(parts[1]) < double.Parse(parts[3]) ? true : false;
 
 				ws.DrawLine(ws.PricePane, int.Parse(parts[0]), double.Parse(parts[1]), int.Parse(parts[2]), double.Parse(parts[3]), color, LineStyle.Solid, 3);
-				ws.AnnotateBar(parts[4] + "% " + parts[5] + " @ " + parts[6], int.Parse(parts[2]), lable, color);
+				ws.AnnotateBar(parts[4] + "% " + parts[5] + " @ " + parts[6], int.Parse(parts[2]), lable, labelColor);
 
 
 			}
@@ -148,23 +149,23 @@ namespace WealthLab.Strategies
 				sma200Ds[i] = valSma200;
 				stdv20Ds[i] = valStdv20;
 
-				if (i % 10 == 0) //|| i == size - 1)
+				if (i % 10 == 0 || i == size - 1)
 				{
 					double cv20 = Math.Round(valStdv20 * 100 / valSma20, 2);  // Coefficient of Variation (CV)
 					String stdv20Text = Math.Round(valStdv20, 2).ToString() + " (" + cv20.ToString() + "%)";
-					ws.AnnotateChart(ws.PricePane, stdv20Text, i, valSma20-2*valStdv20, Color.Blue, Color.Transparent);
+					ws.AnnotateChart(ws.PricePane, stdv20Text, i, valSma20-2*valStdv20, Color.SkyBlue, Color.Transparent);
 
 					ws.AnnotateChart(ws.PricePane, valSma50.ToString(), i, valSma50, Color.Orange, Color.Transparent);
 					ws.AnnotateChart(ws.PricePane, valSma125.ToString(), i, valSma125, Color.Green, Color.Transparent);
 					ws.AnnotateChart(ws.PricePane, valSma200.ToString(), i, valSma200, Color.Magenta, Color.Transparent);
 				}
 			}
-			ws.PlotSeries(ws.PricePane, sma20Ds, Color.Cyan, WealthLab.LineStyle.Solid, 1);
+			ws.PlotSeries(ws.PricePane, sma20Ds, Color.SkyBlue, WealthLab.LineStyle.Solid, 1);
 			ws.PlotSeries(ws.PricePane, sma50Ds, Color.Orange, WealthLab.LineStyle.Solid, 1);
 			ws.PlotSeries(ws.PricePane, sma125Ds, Color.Green, WealthLab.LineStyle.Solid, 1);
 			ws.PlotSeries(ws.PricePane, sma200Ds, Color.Magenta, WealthLab.LineStyle.Solid, 1);
-			ws.PlotSeries(ws.PricePane, sma20Ds+2*stdv20Ds, Color.Cyan, WealthLab.LineStyle.Solid, 2);
-			ws.PlotSeries(ws.PricePane, sma20Ds-2*stdv20Ds, Color.Cyan, WealthLab.LineStyle.Solid, 2);
+			ws.PlotSeries(ws.PricePane, sma20Ds+2*stdv20Ds, Color.SkyBlue, WealthLab.LineStyle.Solid, 2);
+			ws.PlotSeries(ws.PricePane, sma20Ds-2*stdv20Ds, Color.SkyBlue, WealthLab.LineStyle.Solid, 2);
 
 		}
 	}
