@@ -12,6 +12,31 @@ using System.Collections.Generic;
 
 namespace WealthLab.Strategies
 {
+	public class LevelReporter
+	{
+		AutoAnlysisSystem ws;
+		//ChartPane rsi2Pane;
+
+		public LevelReporter(AutoAnlysisSystem obj)
+		{
+			this.ws = obj;
+			//rsi2Pane = ws.CreatePane(8, true, true);
+		}
+
+		public void handle(Dictionary<string, string> calcResult)
+		{
+			int n = 40;
+			String[] level = calcResult["level" + n].Split(',');
+			foreach (string l in level)
+			{
+				if(l.Length<=1) continue;
+				string[] parts = l.Split(';');
+				ws.DrawLine(ws.PricePane, int.Parse(parts[0]), double.Parse(parts[2]), int.Parse(parts[1]), double.Parse(parts[2]), Color.Blue, LineStyle.Solid, 2);
+				//ws.AnnotateBar(parts[4] + "% " + parts[5] + " @ " + parts[6], int.Parse(parts[2]), lable, labelColor);
+			}
+		}
+	}
+
 	public class HighLowReporter
 	{
 		AutoAnlysisSystem ws;
@@ -57,7 +82,7 @@ namespace WealthLab.Strategies
 
 			String[] swing = calcResult["swing"+n].Split(',');
 			foreach(string s in swing) {
-				ws.PrintDebug(s);
+				//ws.PrintDebug(s);
 				string[] parts = s.Split(';');
 
 				Color color = double.Parse(parts[1]) < double.Parse(parts[3]) ? Color.Aquamarine : Color.Aquamarine;
@@ -66,8 +91,6 @@ namespace WealthLab.Strategies
 
 				ws.DrawLine(ws.PricePane, int.Parse(parts[0]), double.Parse(parts[1]), int.Parse(parts[2]), double.Parse(parts[3]), color, LineStyle.Solid, 3);
 				ws.AnnotateBar(parts[4] + "% " + parts[5] + " @ " + parts[6], int.Parse(parts[2]), lable, labelColor);
-
-
 			}
 		}
 	}
@@ -251,6 +274,7 @@ namespace WealthLab.Strategies
 			new movingAverageReporter(this).handle(calcResult);
 			new RsiReporter(this).handle(calcResult);
 			new HighLowReporter(this).handle(calcResult);
+			new LevelReporter(this).handle(calcResult);
 		}
 	}
 }
