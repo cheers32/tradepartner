@@ -25,7 +25,7 @@ namespace WealthLab.Strategies
 
 		public void handle(Dictionary<string, string> calcResult)
 		{
-			int n = 40;
+			int n = 20;
 			String[] level = calcResult["level" + n].Split(',');
 			foreach (string l in level)
 			{
