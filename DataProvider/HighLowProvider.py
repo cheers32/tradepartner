@@ -56,6 +56,9 @@ def getSwingLines(lowsList, highsList, datesList, lastClose, n):
         start = swings[idx - 1]
         end = swings[idx]
         pivotDate = datesList[end[1]].split(' ')[0] if '12:00:00' in datesList[end[1]] else datesList[end[1]].split(' ')[1]
+        if start[2] == 0:
+            idx += 1
+            continue
         swingText.append(str(start[1]) + ";" + str(start[2]) + ";" + str(end[1]) + ";" + str(end[2])
                          + ";" + str(round(100 * (end[2] / start[2] - 1), 2)) + ";" + str(end[1] - start[1] + 1)
                          + ";" + pivotDate)

@@ -29,9 +29,8 @@ namespace WealthLab.Strategies
 			String[] level = calcResult["level" + n].Split(',');
 			foreach (string l in level)
 			{
-				if(l.Length<=1) continue;
 				string[] parts = l.Split(';');
-				ws.DrawLine(ws.PricePane, int.Parse(parts[0]), double.Parse(parts[2]), int.Parse(parts[1]), double.Parse(parts[2]), Color.Blue, LineStyle.Solid, 2);
+				ws.DrawLine(ws.PricePane, int.Parse(parts[0]), double.Parse(parts[2]), int.Parse(parts[1]), double.Parse(parts[2]), Color.Blue, LineStyle.Solid, 3);
 				//ws.AnnotateBar(parts[4] + "% " + parts[5] + " @ " + parts[6], int.Parse(parts[2]), lable, labelColor);
 			}
 		}
@@ -229,11 +228,17 @@ namespace WealthLab.Strategies
 		Dictionary<String, String> calcResult;
 
 		protected override void Execute() {
+			//const string IntraDataSource = "1 minute";
+			//Bars intra = GetExternalSymbol(IntraDataSource, Bars.Symbol, false);
+			//double latest = intra.Close[intra.Close.Count - 1];
+			//PrintDebug(intra);
+
 			// gather raw data
 			StringBuilder openSb = new StringBuilder();
 			StringBuilder highSb = new StringBuilder();
 			StringBuilder lowSb = new StringBuilder();
 			StringBuilder closeSb = new StringBuilder();
+			StringBuilder volumeSb = new StringBuilder();
 			StringBuilder dateSb = new StringBuilder();
 			int size = Close.Count;
 			for (int i = 0; i < size; i++)
@@ -242,12 +247,14 @@ namespace WealthLab.Strategies
 				highSb.Append(High[i]).Append(",");
 				lowSb.Append(Low[i]).Append(",");
 				closeSb.Append(Close[i]).Append(",");
+				volumeSb.Append(Volume[i]).Append(",");
 				dateSb.Append(Date[i]).Append(",");
 			}
 			openSb.Remove(openSb.Length - 1, 1);
 			highSb.Remove(highSb.Length - 1, 1);
 			lowSb.Remove(lowSb.Length - 1, 1);
 			closeSb.Remove(closeSb.Length - 1, 1);
+			volumeSb.Remove(volumeSb.Length - 1, 1);
 			dateSb.Remove(dateSb.Length - 1, 1);
 
 			// send request for calculation
@@ -259,6 +266,7 @@ namespace WealthLab.Strategies
 				data.Add("high", highSb.ToString());
 				data.Add("low", lowSb.ToString());
 				data.Add("close", closeSb.ToString());
+				data.Add("volume", volumeSb.ToString());
 				data.Add("date", dateSb.ToString());
 				var response = client.UploadValues(baseUrl, data);
 				var outputString = Encoding.Default.GetString(response).Replace("\"", "");

@@ -2,9 +2,12 @@ from collections import deque
 
 def getKey(candidateKey, map, threshold):
     for key in map:
+        if key == 0:
+            continue
         if abs(candidateKey/key-1)*100<threshold:
             return key
     return candidateKey
+
 
 def getLevels(openList, highList, lowList, closeList, n):
     openQueue = deque()
@@ -15,17 +18,17 @@ def getLevels(openList, highList, lowList, closeList, n):
     size = len(openList)
     idx = 0
     resList = []
-    threshold = 0.2
+    threshold = 0.02
     while idx < size:
         if len(openQueue) >= n:
             priceMap[openQueue.popleft()].popleft()
             priceMap[highQueue.popleft()].popleft()
             priceMap[lowQueue.popleft()].popleft()
             priceMap[closeQueue.popleft()].popleft()
-        open = round(float(openList[idx]),1)
-        high = round(float(highList[idx]),1)
-        low = round(float(lowList[idx]),1)
-        close = round(float(closeList[idx]),1)
+        open = round(float(openList[idx]),2)
+        high = round(float(highList[idx]),2)
+        low = round(float(lowList[idx]),2)
+        close = round(float(closeList[idx]),2)
         # find existing key from table, then push key and index
         open = getKey(open, priceMap, threshold)
         high = getKey(high, priceMap, threshold)
@@ -48,7 +51,36 @@ def getLevels(openList, highList, lowList, closeList, n):
         priceMap[low].append(idx)
         priceMap[close].append(idx)
         for key in priceMap:
-            if len(priceMap[key]) >= 7:
+            if len(priceMap[key]) >= 10:
+                startIdx = priceMap[key][0]
+                endIdx = priceMap[key][len(priceMap[key])-1]
+                resList.append(str(startIdx)+";"+str(endIdx)+";"+str(key))
+        idx += 1
+    res = "level"+str(n)+"@"+",".join(resList)
+    return res
+
+
+def getLowTrendLines(lowList, n):
+    lowQueue = deque()
+    priceMap = {}
+    size = len(lowList)
+    idx = 0
+    resList = []
+    threshold = 0
+    while idx < size:
+        if len(lowQueue) >= n*2:
+            priceMap[lowQueue.popleft()].popleft()
+        low = round(float(lowList[idx]),1)
+        # find existing key from table, then push key and index
+        for other in lowList:
+            pass
+        low = getKey(low, priceMap, threshold)
+        lowQueue.append(low)
+        if low not in priceMap:
+            priceMap[low] = deque()
+        priceMap[low].append(idx)
+        for key in priceMap:
+            if len(priceMap[key]) >= 30:
                 startIdx = priceMap[key][0]
                 endIdx = priceMap[key][len(priceMap[key])-1]
                 resList.append(str(startIdx)+";"+str(endIdx)+";"+str(key))
