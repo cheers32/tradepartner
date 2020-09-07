@@ -1,12 +1,7 @@
 from Algos.ds.ListNode import ListNode, getList, printList
 
 
-def addTwoNumbers(l1, l2):
-    """
-    :type l1: ListNode
-    :type l2: ListNode
-    :rtype: ListNode
-    """
+def addTwoNumbers(l1: ListNode, l2: ListNode) -> ListNode:
     res = ListNode()
     node = res
     carry = 0

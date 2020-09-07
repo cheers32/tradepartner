@@ -1,10 +1,7 @@
+from typing import List
 
-def twoSum(nums, target):
-    """
-    :type nums: List[int]
-    :type target: int
-    :rtype: List[int]
-    """
+
+def twoSum(nums: List[int], target: int) -> List[int]:
     map = {}  # num->idx
     idx = 0
     for n in nums:

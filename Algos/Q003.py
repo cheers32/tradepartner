@@ -1,8 +1,4 @@
-def lengthOfLongestSubstring(s):
-    """
-    :type s: str
-    :rtype: int
-    """
+def lengthOfLongestSubstring(s: str) -> int:
     map = {}  # char -> idx
     idx = 0
     start = 0
